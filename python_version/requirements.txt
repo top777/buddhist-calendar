@@ -1,0 +1,4 @@
+# 佛历万年历 Python 依赖包
+# 安装命令: pip install -r requirements.txt
+
+zhdate>=0.1

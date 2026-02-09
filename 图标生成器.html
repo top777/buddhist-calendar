@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>佛历图标生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #f9f3e9 0%, #f5e6d3 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #8B4513;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+        }
+        .icon-preview {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+        .icon-box {
+            text-align: center;
+        }
+        .icon-box canvas {
+            border: 2px solid #e8e0d8;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        .icon-label {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        .controls {
+            background: #f5f1eb;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        .control-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #8B4513;
+            font-weight: bold;
+        }
+        input[type="text"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #e8e0d8;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .color-picker {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .color-option {
+            width: 50px;
+            height: 50px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: all 0.3s;
+        }
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+        .color-option.selected {
+            border-color: #333;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
+        }
+        .btn-secondary {
+            background: linear-gradient(to right, #52c41a, #73d13d);
+            margin-top: 10px;
+        }
+        .steps {
+            background: #e6f7ff;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 30px;
+            border-left: 4px solid #1890ff;
+        }
+        .steps h3 {
+            color: #1890ff;
+            margin-bottom: 15px;
+        }
+        .steps ol {
+            padding-left: 20px;
+        }
+        .steps li {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+        .download-area {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .download-btn {
+            flex: 1;
+            padding: 12px;
+            background: #1890ff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .download-btn:hover {
+            background: #40a9ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🙏 佛历图标生成器</h1>
+        <p class="subtitle">生成PWA应用所需的图标文件</p>
+
+        <div class="icon-preview">
+            <div class="icon-box">
+                <canvas id="canvas192" width="192" height="192"></canvas>
+                <div class="icon-label">192x192 (安卓)</div>
+            </div>
+            <div class="icon-box">
+                <canvas id="canvas512" width="512" height="512"></canvas>
+                <div class="icon-label">512x512 (PWA)</div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <label>图标样式</label>
+                <select id="iconStyle">
+                    <option value="default">默认佛字样式</option>
+                    <option value="calendar">日历样式</option>
+                    <option value="lotus">莲花样式</option>
+                    <option value="minimal">简约样式</option>
+                </select>
+            </div>
+
+            <div class="control-group">
+                <label>背景颜色</label>
+                <div class="color-picker" id="bgColorPicker">
+                    <div class="color-option selected" style="background: #8B4513;" data-color="#8B4513"></div>
+                    <div class="color-option" style="background: #A0522D;" data-color="#A0522D"></div>
+                    <div class="color-option" style="background: #D4AF37;" data-color="#D4AF37"></div>
+                    <div class="color-option" style="background: #FFD700;" data-color="#FFD700"></div>
+                    <div class="color-option" style="background: #ffffff;" data-color="#ffffff"></div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>文字颜色</label>
+                <div class="color-picker" id="textColorPicker">
+                    <div class="color-option selected" style="background: #FFD700;" data-color="#FFD700"></div>
+                    <div class="color-option" style="background: #ffffff;" data-color="#ffffff"></div>
+                    <div class="color-option" style="background: #8B4513;" data-color="#8B4513"></div>
+                </div>
+            </div>
+
+            <button class="btn" onclick="generateIcons()">🔄 重新生成图标</button>
+        </div>
+
+        <div class="download-area">
+            <button class="download-btn" onclick="downloadIcon('192')">📥 下载 192x192</button>
+            <button class="download-btn" onclick="downloadIcon('512')">📥 下载 512x512</button>
+        </div>
+
+        <div class="steps">
+            <h3>📋 使用步骤</h3>
+            <ol>
+                <li>选择您喜欢的图标样式和颜色</li>
+                <li>点击"下载"按钮保存两个图标文件</li>
+                <li>将下载的文件重命名为 <code>icon-192.png</code> 和 <code>icon-512.png</code></li>
+                <li>将图标文件放到与HTML文件相同的目录</li>
+                <li>在手机浏览器中打开HTML文件并安装</li>
+            </ol>
+        </div>
+
+        <button class="btn btn-secondary" onclick="showDeployGuide()">📖 查看完整部署指南</button>
+    </div>
+
+    <script>
+        let currentBgColor = '#8B4513';
+        let currentTextColor = '#FFD700';
+        let currentStyle = 'default';
+
+        // 初始化
+        window.onload = function() {
+            generateIcons();
+            setupColorPickers();
+        };
+
+        // 设置颜色选择器
+        function setupColorPickers() {
+            document.querySelectorAll('#bgColorPicker .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#bgColorPicker .color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    currentBgColor = this.dataset.color;
+                    generateIcons();
+                });
+            });
+
+            document.querySelectorAll('#textColorPicker .color-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    document.querySelectorAll('#textColorPicker .color-option').forEach(o => o.classList.remove('selected'));
+                    this.classList.add('selected');
+                    currentTextColor = this.dataset.color;
+                    generateIcons();
+                });
+            });
+
+            document.getElementById('iconStyle').addEventListener('change', function() {
+                currentStyle = this.value;
+                generateIcons();
+            });
+        }
+
+        // 生成图标
+        function generateIcons() {
+            drawIcon('canvas192', 192);
+            drawIcon('canvas512', 512);
+        }
+
+        // 绘制图标
+        function drawIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const center = size / 2;
+
+            // 清空画布
+            ctx.clearRect(0, 0, size, size);
+
+            // 绘制圆形背景
+            ctx.beginPath();
+            ctx.arc(center, center, size/2 - 5, 0, Math.PI * 2);
+            ctx.fillStyle = currentBgColor;
+            ctx.fill();
+
+            // 根据样式绘制不同图案
+            switch(currentStyle) {
+                case 'calendar':
+                    drawCalendarStyle(ctx, size);
+                    break;
+                case 'lotus':
+                    drawLotusStyle(ctx, size);
+                    break;
+                case 'minimal':
+                    drawMinimalStyle(ctx, size);
+                    break;
+                default:
+                    drawDefaultStyle(ctx, size);
+            }
+        }
+
+        // 默认佛字样式
+        function drawDefaultStyle(ctx, size) {
+            const center = size / 2;
+            const fontSize = size * 0.5;
+
+            // 绘制佛字
+            ctx.font = `bold ${fontSize}px "Microsoft YaHei", sans-serif`;
+            ctx.fillStyle = currentTextColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('佛', center, center);
+
+            // 绘制装饰圆环
+            ctx.beginPath();
+            ctx.arc(center, center, size * 0.38, 0, Math.PI * 2);
+            ctx.strokeStyle = currentTextColor;
+            ctx.lineWidth = size * 0.02;
+            ctx.stroke();
+        }
+
+        // 日历样式
+        function drawCalendarStyle(ctx, size) {
+            const center = size / 2;
+
+            // 绘制日历外框
+            const boxSize = size * 0.7;
+            ctx.fillStyle = currentTextColor;
+            ctx.fillRect(center - boxSize/2, center - boxSize/2, boxSize, boxSize);
+
+            // 绘制日历顶部
+            ctx.fillStyle = currentBgColor;
+            ctx.fillRect(center - boxSize/2, center - boxSize/2, boxSize, boxSize * 0.25);
+
+            // 绘制佛字
+            const fontSize = size * 0.25;
+            ctx.font = `bold ${fontSize}px "Microsoft YaHei", sans-serif`;
+            ctx.fillStyle = currentBgColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('佛', center, center + boxSize * 0.1);
+        }
+
+        // 莲花样式
+        function drawLotusStyle(ctx, size) {
+            const center = size / 2;
+
+            // 简化的莲花图案
+            ctx.fillStyle = currentTextColor;
+            const petalSize = size * 0.15;
+
+            // 绘制花瓣
+            for (let i = 0; i < 8; i++) {
+                const angle = (i * Math.PI * 2) / 8;
+                const x = center + Math.cos(angle) * size * 0.25;
+                const y = center + Math.sin(angle) * size * 0.25;
+
+                ctx.beginPath();
+                ctx.ellipse(x, y, petalSize, petalSize * 0.5, angle, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 中心佛字
+            const fontSize = size * 0.25;
+            ctx.font = `bold ${fontSize}px "Microsoft YaHei", sans-serif`;
+            ctx.fillStyle = currentTextColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('佛', center, center);
+        }
+
+        // 简约样式
+        function drawMinimalStyle(ctx, size) {
+            const center = size / 2;
+
+            // 绘制佛字
+            const fontSize = size * 0.55;
+            ctx.font = `bold ${fontSize}px "Microsoft YaHei", sans-serif`;
+            ctx.fillStyle = currentTextColor;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('佛', center, center);
+
+            // 底部装饰线
+            ctx.beginPath();
+            ctx.moveTo(center - size * 0.2, center + size * 0.3);
+            ctx.lineTo(center + size * 0.2, center + size * 0.3);
+            ctx.strokeStyle = currentTextColor;
+            ctx.lineWidth = size * 0.03;
+            ctx.stroke();
+        }
+
+        // 下载图标
+        function downloadIcon(size) {
+            const canvas = document.getElementById('canvas' + size);
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        }
+
+        // 显示部署指南
+        function showDeployGuide() {
+            alert(`
+📱 PWA部署完整指南
+
+【本地测试】
+1. 确保以下文件在同一目录：
+   - 离线佛历万年历工具.html
+   - lunar.js
+   - manifest.json
+   - service-worker.js
+   - icon-192.png
+   - icon-512.png
+
+2. 手机安装：
+   安卓：Chrome打开 → 菜单 → "添加到主屏幕"
+   iPhone：Safari打开 → 分享 → "添加到主屏幕"
+
+【在线部署】
+推荐免费平台：
+1. GitHub Pages（推荐，免费）
+2. Netlify（拖拽部署）
+3. Vercel（从GitHub导入）
+
+详细步骤请查看《打包指南.md》文件
+            `);
+        }
+    </script>
+</body>
+</html>

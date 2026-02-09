@@ -1,0 +1,15 @@
+{
+  "appId": "com.buddhist.calendar",
+  "appName": "佛历万年历",
+  "webDir": "./pwa",
+  "bundledWebRuntime": false,
+  "server": {
+    "androidScheme": "https"
+  },
+  "android": {
+    "buildOptions": {
+      "keystorePath": "",
+      "keystoreAlias": ""
+    }
+  }
+}

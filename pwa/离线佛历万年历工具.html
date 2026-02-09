@@ -1,0 +1,1242 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>离线佛历万年历工具</title>
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B4513">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="佛历万年历">
+    <!-- PWA Icon -->
+    <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icon-192.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f9f3e9 0%, #f5e6d3 100%);
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 1px solid rgba(139, 69, 19, 0.1);
+        }
+        
+        header {
+            background: linear-gradient(to right, #8B4513, #A0522D);
+            color: #FFD700;
+            padding: 25px 30px;
+            text-align: center;
+            position: relative;
+        }
+        
+        header h1 {
+            font-size: 2.3rem;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: flex;
+            flex-wrap: wrap;
+            padding: 20px;
+        }
+        
+        .calendar-section {
+            flex: 3;
+            min-width: 300px;
+            padding: 20px;
+        }
+        
+        .info-section {
+            flex: 2;
+            min-width: 300px;
+            padding: 20px;
+            background-color: #fbf9f5;
+            border-left: 1px solid #e8e0d8;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #f5f1eb;
+            border-radius: 10px;
+            border: 1px solid #e8e0d8;
+        }
+        
+        .month-year {
+            font-size: 1.8rem;
+            color: #8B4513;
+            font-weight: bold;
+        }
+        
+        .nav-buttons button {
+            background-color: #8B4513;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.95rem;
+            margin-left: 8px;
+            transition: all 0.3s;
+        }
+        
+        .nav-buttons button:hover {
+            background-color: #A0522D;
+            transform: translateY(-2px);
+        }
+        
+        .weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #8B4513;
+            padding: 12px 0;
+            border-bottom: 2px solid #e8e0d8;
+            background-color: #f5f1eb;
+            border-radius: 8px;
+        }
+        
+        .weekdays div {
+            padding: 8px;
+        }
+        
+        .days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 6px;
+        }
+        
+        .day {
+            min-height: 90px;
+            padding: 10px;
+            border-radius: 8px;
+            background-color: #fcfaf6;
+            border: 1px solid #e8e0d8;
+            position: relative;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        
+        .day:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+            z-index: 2;
+        }
+        
+        .day-number {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #333;
+            text-align: right;
+            margin-bottom: 5px;
+        }
+        
+        .lunar-date {
+            font-size: 0.8rem;
+            color: #8B4513;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .festival {
+            font-size: 0.7rem;
+            padding: 2px 4px;
+            border-radius: 3px;
+            margin-top: 3px;
+            display: block;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            text-align: center;
+        }
+        
+        .solar-term {
+            background-color: #e6f7ff;
+            color: #1890ff;
+        }
+        
+        .buddha-festival {
+            background-color: #fff7e6;
+            color: #fa8c16;
+        }
+        
+        .zhai-day {
+            background-color: #f6ffed;
+            color: #52c41a;
+        }
+
+        .tomorrow-zhai {
+            background-color: #fff2e8;
+            color: #fa8c16;
+            font-weight: bold;
+        }
+
+        .other-festival {
+            background-color: #f9f0ff;
+            color: #722ed1;
+        }
+        
+        .today {
+            background-color: #fffbe6;
+            border: 2px solid #ffc53d;
+        }
+        
+        .prev-month, .next-month {
+            color: #aaa;
+            background-color: #f9f9f9;
+        }
+        
+        .selected {
+            background-color: #e8f4ff;
+            border: 2px solid #1890ff;
+        }
+        
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f5f1eb;
+            border-radius: 10px;
+            border: 1px solid #e8e0d8;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .legend-color {
+            width: 18px;
+            height: 18px;
+            border-radius: 3px;
+            margin-right: 8px;
+        }
+        
+        .info-section h2 {
+            color: #8B4513;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e8e0d8;
+        }
+        
+        .date-details {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e8e0d8;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .date-info-line {
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .date-info-line:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .info-label {
+            font-weight: bold;
+            color: #8B4513;
+            display: inline-block;
+            min-width: 80px;
+        }
+        
+        .zhai-day-types {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e8e0d8;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .zhai-type {
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px dashed #eee;
+        }
+        
+        .zhai-type:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        
+        .zhai-type h4 {
+            color: #8B4513;
+            margin-bottom: 8px;
+        }
+        
+        .zhai-days {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .zhai-day-item {
+            padding: 5px 10px;
+            background-color: #f6ffed;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            border: 1px solid #e8f5e8;
+        }
+        
+        .upcoming-events {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #e8e0d8;
+            margin-bottom: 25px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+        
+        .upcoming-events ul {
+            list-style: none;
+            margin-top: 10px;
+        }
+        
+        .upcoming-events li {
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            background-color: #fbf9f5;
+            border-left: 4px solid #8B4513;
+            border-radius: 5px;
+        }
+        
+        .event-date {
+            font-weight: bold;
+            color: #8B4513;
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .important-note {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: #fff7e6;
+            border-radius: 10px;
+            border-left: 5px solid #ffc53d;
+        }
+        
+        .important-note h3 {
+            color: #d48806;
+            margin-bottom: 10px;
+        }
+        
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+            border-top: 1px solid #e8e0d8;
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+        
+        /* 平板设备 (768px - 1024px) */
+        @media (max-width: 1024px) {
+            .container {
+                margin: 10px;
+                border-radius: 10px;
+            }
+
+            .calendar-header {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .nav-buttons {
+                display: flex;
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 8px;
+            }
+
+            .nav-buttons button {
+                margin: 0;
+                flex: 1 1 auto;
+                min-width: 80px;
+            }
+
+            .day {
+                min-height: 70px;
+                padding: 5px;
+            }
+
+            .day-number {
+                font-size: 1rem;
+            }
+
+            .lunar-date {
+                font-size: 0.7rem;
+            }
+
+            .festival {
+                font-size: 0.6rem;
+                padding: 1px 3px;
+            }
+        }
+
+        /* 手机设备 (最大768px) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header {
+                padding: 20px 15px;
+            }
+
+            header h1 {
+                font-size: 1.5rem;
+                margin-bottom: 5px;
+            }
+
+            header p {
+                font-size: 0.9rem;
+            }
+
+            .main-content {
+                flex-direction: column;
+                padding: 15px 10px;
+            }
+
+            .calendar-section,
+            .info-section {
+                padding: 15px 10px;
+                min-width: 100%;
+            }
+
+            .info-section {
+                border-left: none;
+                border-top: 1px solid #e8e0d8;
+            }
+
+            .calendar-header {
+                padding: 10px;
+                margin-bottom: 15px;
+            }
+
+            .month-year {
+                font-size: 1.3rem;
+            }
+
+            .nav-buttons button {
+                font-size: 0.85rem;
+                padding: 6px 12px;
+                min-width: 70px;
+            }
+
+            .weekdays {
+                padding: 8px 0;
+            }
+
+            .weekdays div {
+                padding: 5px 2px;
+                font-size: 0.9rem;
+            }
+
+            .days {
+                gap: 4px;
+            }
+
+            .day {
+                min-height: 55px;
+                padding: 4px;
+            }
+
+            .day-number {
+                font-size: 0.95rem;
+                margin-bottom: 2px;
+            }
+
+            .lunar-date {
+                font-size: 0.65rem;
+                margin-bottom: 2px;
+            }
+
+            .festival {
+                font-size: 0.55rem;
+                padding: 1px 2px;
+            }
+
+            .legend {
+                flex-direction: column;
+                gap: 8px;
+            }
+
+            .legend-item {
+                margin-right: 0;
+            }
+
+            .date-details,
+            .zhai-day-types,
+            .upcoming-events {
+                padding: 15px 10px;
+            }
+
+            .date-info-line {
+                margin-bottom: 8px;
+                padding-bottom: 8px;
+            }
+
+            .info-label {
+                min-width: 60px;
+                font-size: 0.9rem;
+            }
+
+            .important-note {
+                padding: 15px;
+                font-size: 0.9rem;
+            }
+
+            .important-note h3 {
+                font-size: 1rem;
+            }
+        }
+
+        /* 小屏手机 (最大480px) */
+        @media (max-width: 480px) {
+            header h1 {
+                font-size: 1.2rem;
+            }
+
+            header p {
+                font-size: 0.8rem;
+            }
+
+            .month-year {
+                font-size: 1.1rem;
+            }
+
+            .nav-buttons button {
+                font-size: 0.75rem;
+                padding: 5px 8px;
+                min-width: 55px;
+            }
+
+            .day {
+                min-height: 45px;
+                padding: 3px;
+            }
+
+            .day-number {
+                font-size: 0.85rem;
+            }
+
+            .lunar-date {
+                font-size: 0.6rem;
+            }
+
+            .festival {
+                font-size: 0.5rem;
+                padding: 1px;
+            }
+
+            .weekdays div {
+                font-size: 0.8rem;
+                padding: 4px 1px;
+            }
+
+            .date-details h2,
+            .zhai-day-types h2,
+            .upcoming-events h2 {
+                font-size: 1.1rem;
+            }
+
+            .zhai-type h4 {
+                font-size: 0.95rem;
+            }
+
+            .zhai-day-item {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+
+            footer {
+                font-size: 0.75rem;
+                padding: 15px 10px;
+            }
+
+            .important-note {
+                padding: 12px;
+            }
+
+            .important-note p {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* 触摸设备优化 */
+        @media (hover: none) and (pointer: coarse) {
+            .nav-buttons button {
+                padding: 10px 15px;
+                min-height: 44px;
+            }
+
+            .day {
+                min-height: 60px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>离线佛历万年历工具</h1>
+            <p>完全本地离线运行，无需网络连接</p>
+        </header>
+        
+        <div class="main-content">
+            <div class="calendar-section">
+                <div class="calendar-header">
+                    <div class="month-year" id="currentMonthYear">2023年10月</div>
+                    <div class="nav-buttons">
+                        <button id="prevYear">上一年</button>
+                        <button id="prevMonth">上一月</button>
+                        <button id="todayBtn">今天</button>
+                        <button id="nextMonth">下一月</button>
+                        <button id="nextYear">下一年</button>
+                    </div>
+                </div>
+                
+                <div class="weekdays">
+                    <div>日</div>
+                    <div>一</div>
+                    <div>二</div>
+                    <div>三</div>
+                    <div>四</div>
+                    <div>五</div>
+                    <div>六</div>
+                </div>
+                
+                <div class="days" id="calendarDays">
+                    <!-- 日历天数将通过JavaScript动态生成 -->
+                </div>
+                
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background-color: #fffbe6; border: 2px solid #ffc53d;"></div>
+                        <span>今天</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color zhai-day"></div>
+                        <span>斋日</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color buddha-festival"></div>
+                        <span>佛菩萨圣诞</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color solar-term"></div>
+                        <span>节气</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color other-festival"></div>
+                        <span>其他节日</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="info-section">
+                <div class="date-details">
+                    <h2>日期详情</h2>
+                    <div class="date-info-line">
+                        <span class="info-label">公历:</span>
+                        <span id="gregorianDate">2023年10月1日</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">农历:</span>
+                        <span id="lunarDate">癸卯年八月十七</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">佛历:</span>
+                        <span id="buddhistDate">佛历2567年</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">生肖:</span>
+                        <span id="chineseZodiac">兔</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">干支:</span>
+                        <span id="ganzhi">癸卯年 辛酉月 壬辰日</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">节气:</span>
+                        <span id="solarTerm">无</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">节日:</span>
+                        <span id="festivals">无</span>
+                    </div>
+                    <div class="date-info-line">
+                        <span class="info-label">宜忌:</span>
+                        <span id="yiJi">无</span>
+                    </div>
+                </div>
+                
+                <div class="zhai-day-types">
+                    <h2>斋日类型</h2>
+                    <div class="zhai-type">
+                        <h4>十斋日 (每月10天)</h4>
+                        <div class="zhai-days">
+                            <span class="zhai-day-item">初一</span>
+                            <span class="zhai-day-item">初八</span>
+                            <span class="zhai-day-item">十四</span>
+                            <span class="zhai-day-item">十五</span>
+                            <span class="zhai-day-item">十八</span>
+                            <span class="zhai-day-item">廿三</span>
+                            <span class="zhai-day-item">廿四</span>
+                            <span class="zhai-day-item">廿八</span>
+                            <span class="zhai-day-item">廿九</span>
+                            <span class="zhai-day-item">三十</span>
+                        </div>
+                        <p style="font-size:0.85rem; color:#666; margin-top:5px;">依据《地藏菩萨本愿经》，小月(29天)时最后一天为廿九</p>
+                    </div>
+                    
+                    <div class="zhai-type">
+                        <h4>六斋日 (每月6天)</h4>
+                        <div class="zhai-days">
+                            <span class="zhai-day-item">初八</span>
+                            <span class="zhai-day-item">十四</span>
+                            <span class="zhai-day-item">十五</span>
+                            <span class="zhai-day-item">廿三</span>
+                            <span class="zhai-day-item">廿九</span>
+                            <span class="zhai-day-item">三十</span>
+                        </div>
+                    </div>
+                    
+                    <div class="zhai-type">
+                        <h4>朔望斋 (每月2天)</h4>
+                        <div class="zhai-days">
+                            <span class="zhai-day-item">初一 (朔日)</span>
+                            <span class="zhai-day-item">十五 (望日)</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="upcoming-events">
+                    <h2>近期重要日期</h2>
+                    <ul id="upcomingEventsList">
+                        <!-- 近期事件将通过JavaScript动态生成 -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="important-note">
+            <h3>使用说明</h3>
+            <p>1. 此工具基于 lunar-javascript 库，完全本地离线运行，无需网络连接。</p>
+            <p>2. 点击日历中的日期可以查看该日的详细农历、佛历信息。</p>
+            <p>3. 绿色标记的日期为斋日，橙色标记的日期为佛菩萨圣诞日。</p>
+            <p>4. 佛历以释迦牟尼佛涅槃年（公元前543年）为纪元元年。</p>
+            <p>5. 所有计算在您的浏览器中本地完成，不会上传任何数据。</p>
+        </div>
+        
+        <footer>
+            <p>离线佛历万年历工具 &copy; 2023 | 基于 lunar-javascript 库 v1.7.1 | 完全离线运行 | 数据仅供参考</p>
+        </footer>
+    </div>
+
+    <!-- 引入 lunar-javascript 库 (本地文件，完全离线运行) -->
+    <script src="lunar.js"></script>
+
+    <script>
+        // 当前显示的日期
+        let currentDate = new Date();
+
+        // 初始化和事件绑定
+        window.onload = function() {
+            // 检查库是否正确加载
+            if (typeof Solar === 'undefined') {
+                document.body.innerHTML = '<h1 style="color:red;text-align:center;margin-top:50px;">错误：lunar.js库未正确加载</h1><p style="text-align:center;">请确保lunar.js文件在同一目录下</p>';
+                return;
+            }
+
+            // 渲染日历
+            renderCalendar(currentDate);
+            updateDateDetails(currentDate);
+            updateUpcomingEvents(currentDate);
+
+            // 绑定按钮事件
+            document.getElementById('prevYear').addEventListener('click', function() {
+                currentDate.setFullYear(currentDate.getFullYear() - 1);
+                renderCalendar(currentDate);
+            });
+
+            document.getElementById('prevMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() - 1);
+                renderCalendar(currentDate);
+            });
+
+            document.getElementById('todayBtn').addEventListener('click', function() {
+                currentDate = new Date();
+                renderCalendar(currentDate);
+                updateDateDetails(currentDate);
+                updateUpcomingEvents(currentDate);
+            });
+
+            document.getElementById('nextMonth').addEventListener('click', function() {
+                currentDate.setMonth(currentDate.getMonth() + 1);
+                renderCalendar(currentDate);
+            });
+
+            document.getElementById('nextYear').addEventListener('click', function() {
+                currentDate.setFullYear(currentDate.getFullYear() + 1);
+                renderCalendar(currentDate);
+            });
+
+            // 给今天的日期元素添加选中状态
+            setTimeout(function() {
+                const todayElement = document.querySelector('.today');
+                if (todayElement) {
+                    todayElement.click();
+                }
+            }, 100);
+
+            // 检查今天或明天是否是十斋日，弹出提醒
+            checkZhaiDayReminder();
+        };
+
+        // 检查十斋日提醒
+        function checkZhaiDayReminder() {
+            const today = new Date();
+            const todaySolar = Solar.fromDate(today);
+            const todayLunar = todaySolar.getLunar();
+            const todayLunarDay = todayLunar.getDay();
+
+            // 检查今天是否是十斋日
+            const isTodayZhai = isTenZhaiDay(todayLunarDay);
+
+            // 检查明天是否是十斋日
+            const tomorrow = new Date(today);
+            tomorrow.setDate(today.getDate() + 1);
+            const tomorrowSolar = Solar.fromDate(tomorrow);
+            const tomorrowLunar = tomorrowSolar.getLunar();
+            const isTomorrowZhai = isTenZhaiDay(tomorrowLunar.getDay());
+
+            let message = '';
+
+            if (isTodayZhai && isTomorrowZhai) {
+                message = `🙏 今日十斋日提醒 🙏\n\n今天是${todayLunar.getMonthInChinese()}${todayLunar.getDayInChinese()}，十斋日\n明日${tomorrowLunar.getMonthInChinese()}${tomorrowLunar.getDayInChinese()}，亦是十斋日\n\n连续两日斋戒，请持戒清净，精进修持！`;
+            } else if (isTodayZhai) {
+                message = `🙏 今日十斋日提醒 🙏\n\n今天是${todayLunar.getMonthInChinese()}${todayLunar.getDayInChinese()}，十斋日\n\n请持戒清净，精进修持！`;
+            } else if (isTomorrowZhai) {
+                message = `🙏 明日十斋日提醒 🙏\n\n明日是${tomorrowLunar.getMonthInChinese()}${tomorrowLunar.getDayInChinese()}，十斋日\n\n请提前准备，明日持戒清净，精进修持！`;
+            }
+
+            if (message) {
+                setTimeout(function() {
+                    alert(message);
+                }, 500);
+            }
+        }
+
+        // 渲染日历
+        function renderCalendar(date) {
+            if (typeof Solar === 'undefined') {
+                console.error('Solar 对象未定义');
+                return;
+            }
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            // 更新月份年份显示
+            document.getElementById('currentMonthYear').textContent = `${year}年${month + 1}月`;
+
+            // 获取该月的第一天和最后一天
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+
+            // 获取该月的第一天是星期几（0 = 星期日）
+            const firstDayIndex = firstDay.getDay();
+
+            // 获取该月的总天数
+            const totalDays = lastDay.getDate();
+
+            // 获取上个月的总天数
+            const prevMonthLastDay = new Date(year, month, 0).getDate();
+
+            // 清空日历容器
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+
+            // 添加上个月的日期
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const day = prevMonthLastDay - i;
+                const dayDate = new Date(year, month - 1, day);
+                const dayElement = createDayElement(dayDate, true);
+                calendarDays.appendChild(dayElement);
+            }
+
+            // 添加本月的日期
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && today.getMonth() === month;
+
+            for (let i = 1; i <= totalDays; i++) {
+                const dayDate = new Date(year, month, i);
+                const isToday = isCurrentMonth && i === today.getDate();
+                const dayElement = createDayElement(dayDate, false, isToday);
+                calendarDays.appendChild(dayElement);
+            }
+
+            // 计算下个月需要添加的日期数量
+            const totalCells = 42; // 6行 * 7列
+            const nextMonthDaysCount = totalCells - (firstDayIndex + totalDays);
+
+            // 添加下个月的日期
+            for (let i = 1; i <= nextMonthDaysCount; i++) {
+                const dayDate = new Date(year, month + 1, i);
+                const dayElement = createDayElement(dayDate, true);
+                calendarDays.appendChild(dayElement);
+            }
+        }
+        
+        // 创建日期元素
+        function createDayElement(date, isOtherMonth, isToday = false) {
+            const day = date.getDate();
+            const month = date.getMonth() + 1;
+            const year = date.getFullYear();
+            
+            // 使用lunar-javascript库获取农历信息
+            const solar = Solar.fromDate(date);
+            const lunar = solar.getLunar();
+            
+            const lunarMonth = lunar.getMonth();
+            const lunarDay = lunar.getDay();
+            const lunarDayName = lunar.getDayInChinese();
+            
+            // 创建日期元素
+            const dayElement = document.createElement('div');
+            dayElement.className = 'day';
+            dayElement.setAttribute('data-date', date.toISOString().split('T')[0]);
+            
+            if (isOtherMonth) {
+                dayElement.classList.add('prev-month');
+            }
+            
+            if (isToday) {
+                dayElement.classList.add('today');
+            }
+            
+            // 添加日期数字
+            const dayNumber = document.createElement('div');
+            dayNumber.className = 'day-number';
+            dayNumber.textContent = day;
+            dayElement.appendChild(dayNumber);
+            
+            // 添加农历日期
+            const lunarDateElement = document.createElement('div');
+            lunarDateElement.className = 'lunar-date';
+            lunarDateElement.textContent = lunarDayName;
+            dayElement.appendChild(lunarDateElement);
+            
+            // 获取节日信息
+            const festivals = lunar.getFestivals();
+            const jieQi = lunar.getJieQi();
+            
+            // 检查是否是斋日 (十斋日)
+            const isZhaiDay = isTenZhaiDay(lunarDay);
+
+            // 检查明天是否是斋日
+            const tomorrowDate = new Date(date);
+            tomorrowDate.setDate(date.getDate() + 1);
+            const tomorrowSolar = Solar.fromDate(tomorrowDate);
+            const tomorrowLunar = tomorrowSolar.getLunar();
+            const isTomorrowZhai = isTenZhaiDay(tomorrowLunar.getDay());
+
+            // 标记明日斋日提醒
+            if (isTomorrowZhai && !isZhaiDay) {
+                const tomorrowZhaiElement = document.createElement('div');
+                tomorrowZhaiElement.className = 'festival tomorrow-zhai';
+                tomorrowZhaiElement.textContent = '明日斋日';
+                dayElement.appendChild(tomorrowZhaiElement);
+            }
+
+            // 标记斋日
+            if (isZhaiDay) {
+                const zhaiElement = document.createElement('div');
+                zhaiElement.className = 'festival zhai-day';
+                zhaiElement.textContent = '十斋日';
+                dayElement.appendChild(zhaiElement);
+            }
+            
+            // 标记佛菩萨圣诞
+            if (festivals && festivals.length > 0) {
+                festivals.forEach(festival => {
+                    if (isBuddhaFestival(festival)) {
+                        const festivalElement = document.createElement('div');
+                        festivalElement.className = 'festival buddha-festival';
+                        festivalElement.textContent = festival;
+                        dayElement.appendChild(festivalElement);
+                    }
+                });
+            }
+            
+            // 标记节气
+            if (jieQi) {
+                const jieQiElement = document.createElement('div');
+                jieQiElement.className = 'festival solar-term';
+                jieQiElement.textContent = jieQi;
+                dayElement.appendChild(jieQiElement);
+            }
+            
+            // 标记其他节日
+            if (festivals && festivals.length > 0) {
+                festivals.forEach(festival => {
+                    if (!isBuddhaFestival(festival)) {
+                        const festivalElement = document.createElement('div');
+                        festivalElement.className = 'festival other-festival';
+                        festivalElement.textContent = festival;
+                        dayElement.appendChild(festivalElement);
+                    }
+                });
+            }
+            
+            // 添加点击事件
+            dayElement.addEventListener('click', function() {
+                // 移除所有日期的选中状态
+                const allDays = document.querySelectorAll('.day');
+                allDays.forEach(day => {
+                    day.classList.remove('selected');
+                });
+                
+                // 为选中的日期添加选中状态
+                dayElement.classList.add('selected');
+                
+                // 更新日期详情
+                updateDateDetails(date);
+            });
+            
+            return dayElement;
+        }
+        
+        // 判断是否为十斋日
+        function isTenZhaiDay(lunarDay) {
+            const tenZhaiDays = [1, 8, 14, 15, 18, 23, 24, 28, 29, 30];
+            return tenZhaiDays.includes(lunarDay);
+        }
+        
+        // 判断是否为佛菩萨圣诞
+        function isBuddhaFestival(festivalName) {
+            const buddhaFestivals = [
+                '佛诞', '佛圣诞', '菩萨圣诞', '观音', '释迦牟尼', '弥勒',
+                '文殊', '普贤', '地藏', '韦驮', '药师', '阿弥陀佛'
+            ];
+            
+            return buddhaFestivals.some(keyword => festivalName.includes(keyword));
+        }
+        
+        // 更新日期详情
+        function updateDateDetails(date) {
+            const solar = Solar.fromDate(date);
+            const lunar = solar.getLunar();
+            const foto = Foto.fromLunar(lunar); // 佛历
+            
+            // 更新公历日期显示
+            document.getElementById('gregorianDate').textContent = 
+                `${solar.getYear()}年${solar.getMonth()}月${solar.getDay()}日`;
+            
+            // 更新农历日期显示
+            document.getElementById('lunarDate').textContent = 
+                `${lunar.getYearInGanZhi()}年 ${lunar.getMonthInChinese()}${lunar.getDayInChinese()}`;
+            
+            // 更新佛历显示
+            document.getElementById('buddhistDate').textContent = 
+                `佛历${foto.getYear()}年`;
+            
+            // 更新生肖
+            document.getElementById('chineseZodiac').textContent = 
+                lunar.getYearShengXiao();
+            
+            // 更新干支
+            document.getElementById('ganzhi').textContent = 
+                `${lunar.getYearInGanZhi()}年 ${lunar.getMonthInGanZhi()}月 ${lunar.getDayInGanZhi()}日`;
+            
+            // 更新节气
+            const jieQi = lunar.getJieQi();
+            document.getElementById('solarTerm').textContent = jieQi || '无';
+            
+            // 更新节日
+            const festivals = lunar.getFestivals();
+            document.getElementById('festivals').textContent = 
+                festivals && festivals.length > 0 ? festivals.join('， ') : '无';
+            
+            // 更新宜忌
+            const yi = lunar.getDayYi();
+            const ji = lunar.getDayJi();
+            document.getElementById('yiJi').textContent = 
+                (yi && yi.length > 0 ? `宜：${yi.join('、')}` : '') + 
+                (ji && ji.length > 0 ? ` 忌：${ji.join('、')}` : '无');
+
+            // 检查明天是否是斋日，添加提醒
+            const tomorrowDate = new Date(date);
+            tomorrowDate.setDate(date.getDate() + 1);
+            const tomorrowSolar = Solar.fromDate(tomorrowDate);
+            const tomorrowLunar = tomorrowSolar.getLunar();
+            const isTomorrowZhai = isTenZhaiDay(tomorrowLunar.getDay());
+
+            if (isTomorrowZhai) {
+                const festivalsElement = document.getElementById('festivals');
+                const currentText = festivalsElement.textContent;
+                const tomorrowZhaiText = `明日${tomorrowLunar.getMonthInChinese()}${tomorrowLunar.getDayInChinese()}十斋日`;
+                festivalsElement.textContent = currentText === '无' ? tomorrowZhaiText : currentText + '，' + tomorrowZhaiText;
+            }
+
+            // 如果是斋日，添加斋日提示
+            if (isTenZhaiDay(lunar.getDay())) {
+                const festivalsElement = document.getElementById('festivals');
+                const currentText = festivalsElement.textContent;
+                festivalsElement.textContent = currentText === '无' ?
+                    '十斋日（持戒修行吉日）' :
+                    currentText + '，十斋日（持戒修行吉日）';
+            }
+        }
+        
+        // 更新近期重要日期
+        function updateUpcomingEvents(baseDate) {
+            const eventsList = document.getElementById('upcomingEventsList');
+            eventsList.innerHTML = '';
+            
+            // 获取未来30天的重要事件
+            const upcomingEvents = getUpcomingEvents(baseDate, 30);
+            
+            // 如果没有事件，显示提示信息
+            if (upcomingEvents.length === 0) {
+                const li = document.createElement('li');
+                li.textContent = '近期没有重要的佛教节日';
+                eventsList.appendChild(li);
+                return;
+            }
+            
+            // 显示最多6个即将到来的事件
+            const displayCount = Math.min(upcomingEvents.length, 6);
+            
+            for (let i = 0; i < displayCount; i++) {
+                const event = upcomingEvents[i];
+                const li = document.createElement('li');
+                
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'event-date';
+                dateSpan.textContent = `${event.solarDate} (${event.lunarDate})`;
+                
+                const descSpan = document.createElement('span');
+                descSpan.textContent = event.name;
+                
+                li.appendChild(dateSpan);
+                li.appendChild(document.createElement('br'));
+                li.appendChild(descSpan);
+                eventsList.appendChild(li);
+            }
+        }
+        
+        // 获取即将到来的事件
+        function getUpcomingEvents(startDate, daysAhead) {
+            const events = [];
+            const currentDate = new Date(startDate);
+            
+            for (let i = 1; i <= daysAhead; i++) {
+                const nextDate = new Date(currentDate);
+                nextDate.setDate(currentDate.getDate() + i);
+                
+                const solar = Solar.fromDate(nextDate);
+                const lunar = solar.getLunar();
+                const festivals = lunar.getFestivals();
+                
+                // 检查是否是佛菩萨圣诞
+                if (festivals && festivals.length > 0) {
+                    festivals.forEach(festival => {
+                        if (isBuddhaFestival(festival)) {
+                            events.push({
+                                date: nextDate,
+                                solarDate: `${solar.getMonth()}月${solar.getDay()}日`,
+                                lunarDate: `${lunar.getMonthInChinese()}${lunar.getDayInChinese()}`,
+                                name: festival
+                            });
+                        }
+                    });
+                }
+                
+                // 检查是否是十斋日
+                if (isTenZhaiDay(lunar.getDay())) {
+                    events.push({
+                        date: nextDate,
+                        solarDate: `${solar.getMonth()}月${solar.getDay()}日`,
+                        lunarDate: `${lunar.getMonthInChinese()}${lunar.getDayInChinese()}`,
+                        name: "十斋日（持戒修行吉日）"
+                    });
+                }
+                
+                // 检查是否是节气
+                const jieQi = lunar.getJieQi();
+                if (jieQi) {
+                    events.push({
+                        date: nextDate,
+                        solarDate: `${solar.getMonth()}月${solar.getDay()}日`,
+                        lunarDate: `${lunar.getMonthInChinese()}${lunar.getDayInChinese()}`,
+                        name: jieQi
+                    });
+                }
+            }
+            
+            // 按日期排序
+            events.sort((a, b) => a.date - b.date);
+
+            return events;
+        }
+    </script>
+
+    <!-- 注册 Service Worker (PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function() {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(function(registration) {
+                        console.log('Service Worker 注册成功:', registration.scope);
+                    })
+                    .catch(function(error) {
+                        console.log('Service Worker 注册失败:', error);
+                    });
+            });
+        }
+    </script>
+</body>
+</html>
