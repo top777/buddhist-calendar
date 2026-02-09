@@ -22,6 +22,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install Capacitor CLI
+        run: npm install -g @capacitor/cli
+
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
@@ -35,7 +38,7 @@ jobs:
         run: chmod +x android/gradlew
 
       - name: Sync Capacitor
-        run: npx cap sync android
+        run: npm run sync
 
       - name: Build Debug APK
         run: cd android && ./gradlew assembleDebug
